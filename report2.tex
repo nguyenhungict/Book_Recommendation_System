@@ -1,0 +1,710 @@
+\documentclass[12pt, a4paper]{article}
+
+% ─── Packages (pdfLaTeX compatible) ──────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{tocloft}
+
+% ─── Page Geometry ───────────────────────────────────────────────────────────
+\geometry{
+  a4paper,
+  top    = 2.5cm,
+  bottom = 2.5cm,
+  left   = 3cm,
+  right  = 2.5cm
+}
+
+% ─── Colours ─────────────────────────────────────────────────────────────────
+\definecolor{usthblue}{RGB}{0, 70, 127}
+\definecolor{usthred} {RGB}{196, 30, 58}
+
+% ─── Hyperref Setup ──────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = black,
+  urlcolor   = black,
+  citecolor  = black,
+  pdfauthor  = {Group Project},
+  pdftitle   = {Final Report - Machine Learning and Data Mining II},
+}
+
+% ─── Header / Footer ─────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Machine Learning and Data Mining II}}
+\fancyhead[R]{\small\textit{Book Recommendation System}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─── Section Formatting ──────────────────────────────────────────────────────
+\titleformat{\section}
+  {\normalfont\large\bfseries}
+  {\thesection.}{0.5em}{}
+\titleformat{\subsection}
+  {\normalfont\normalsize\bfseries}
+  {\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\itshape}
+  {\thesubsubsection}{0.5em}{}
+
+% ─── ToC Formatting ──────────────────────────────────────────────────────────
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\setlength{\cftbeforesecskip}{4pt}
+\setlength{\cftbeforesubsecskip}{2pt}
+
+% ─── Line Spacing ────────────────────────────────────────────────────────────
+\setstretch{1.3}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  PAGE 1 – COVER PAGE
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \thispagestyle{empty}
+  \centering
+    \begin{minipage}[c][0.90\textheight][c]{0.88\textwidth}
+      \centering
+      \vspace*{0.5cm}
+      {\fontsize{13}{16}\selectfont\bfseries
+        UNIVERSITY OF SCIENCE AND TECHNOLOGY OF HANOI\\[4pt]}
+      {\fontsize{11}{14}\selectfont\itshape
+        Department of Information and Communication Technology}
+      \vspace{0.8cm}
+      \par
+      \IfFileExists{download.png}{%
+        \includegraphics[width=5.5cm]{download.png}
+      }{%
+        \begingroup
+          \setlength{\fboxrule}{0.6pt}
+          \fbox{\parbox[c][3cm][c]{5.5cm}{\centering
+            {\color{usthblue}\fontsize{28}{28}\selectfont\bfseries USTH}\\[4pt]
+            {\color{usthred}\fontsize{8}{10}\selectfont VIETNAM FRANCE UNIVERSITY}
+          }}
+        \endgroup
+      }
+
+      \vspace{0.6cm}
+
+      % Assignment label – centred below the logo
+      \par
+      {\fontsize{12}{16}\selectfont\bfseries FINAL REPORT\\}
+      {\fontsize{12}{16}\selectfont for\\}
+      {\fontsize{12}{16}\selectfont\bfseries\underline{MACHINE LEARNING AND DATA MINING II}\\}
+      \vspace{0.7cm}
+      {\fontsize{14}{18}\selectfont\bfseries Book Recommendation System\\[6pt]}
+      {\fontsize{11}{14}\selectfont\bfseries Dr. Doan Nhat Quang\\}
+      \vspace{0.9cm}
+      \begin{tabular}{|>{\centering\arraybackslash}m{1.2cm}
+                       |>{\centering\arraybackslash}m{5.5cm}
+                       |>{\centering\arraybackslash}m{3cm}|}
+        \hline
+        \textbf{No.} & \textbf{Name} & \textbf{Student ID} \\
+        \hline
+        1 & Nguyễn Duy Hưng & 22BA13154 \\
+        \hline
+        2 & Nguyễn Tiến Dũng & 22BA13087 \\
+        \hline
+        3 & Đàm Tuấn Hưng & 22BA13150 \\
+        \hline
+        4 & Lại Quang Huy & 22BA13161 \\
+        \hline
+        5 & Hoàng Nhật Anh & 22BA13011 \\
+        \hline
+      \end{tabular}
+      \vspace{0.5cm}
+    \end{minipage}
+    
+\end{titlepage}
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  LIST OF ABBREVIATIONS
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\thispagestyle{fancy}
+\section*{List of Abbreviations}
+\addcontentsline{toc}{section}{List of Abbreviations}
+
+\begin{tabular}{@{}ll@{}}
+  \textbf{CB}     & Content-Based (Filtering) \\
+  \textbf{CF}     & Collaborative Filtering \\
+  \textbf{KNN}    & K-Nearest Neighbors \\
+  \textbf{LOO}    & Leave-One-Out \\
+  \textbf{MAE}    & Mean Absolute Error \\
+  \textbf{ML}     & Machine Learning \\
+  \textbf{RMSE}   & Root Mean Square Error \\
+  \textbf{RS}     & Recommender System \\
+  \textbf{SVD}    & Singular Value Decomposition \\
+  \textbf{TF-IDF} & Term Frequency -- Inverse Document Frequency \\
+\end{tabular}
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  ABSTRACT
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\thispagestyle{fancy}
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+The proliferation of large-scale online book platforms has intensified the information
+overload problem, making it increasingly difficult for users to identify relevant titles
+among millions of available works.
+Pure Collaborative Filtering (CF) approaches, while effective for users with sufficient
+rating history, cannot generate recommendations for users who have no prior interaction
+data --- the well-documented \textit{Cold Start} limitation.
+
+This report presents a \textbf{Hybrid Content-Based and Collaborative Filtering
+Recommender System} developed on the GoodBooks-10K dataset
+(10,000 books; 5,976,479 ratings from 53,424 users).
+The system integrates a \textbf{Content-Based K-Nearest Neighbours (KNN)} component,
+which represents each book as a 5,003-dimensional TF-IDF feature vector and
+retrieves similar books via cosine-distance search without requiring user interaction data,
+with a \textbf{TruncatedSVD} component that extracts latent collaborative signals
+for users with sufficient rating history.
+A \textbf{Hybrid Router} combines both components for active users,
+and a \textbf{Smart Intent Detection} module routes queries through title-based search,
+genre-based filtering, or semantic TF-IDF retrieval in a unified interface.
+
+Under a Leave-One-Out evaluation protocol, the Content-Based KNN achieves
+Precision@10 = 13\%, compared to a random baseline precision of 0.01\%
+(uniform sampling over 10,000 books).
+The complete system is deployed as a Flask web application.
+A structured comparison with three pure-CF baselines demonstrates the proposed
+system's advantage in Cold Start coverage and recommendation diversity.
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  TABLE OF CONTENTS
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\thispagestyle{fancy}
+\tableofcontents
+
+\newpage
+\thispagestyle{fancy}
+\listoffigures
+\addcontentsline{toc}{section}{List of Figures}
+\listoftables
+\addcontentsline{toc}{section}{List of Tables}
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  SECTION 1 – INTRODUCTION
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Introduction}
+
+\subsection{Background and Motivation}
+
+The rapid expansion of digital book platforms has made it increasingly difficult for
+users to navigate large catalogues and identify titles aligned with their interests,
+a phenomenon commonly referred to as information overload.
+Recommender systems have been proposed to address this challenge by predicting
+user preferences based on historical behaviour or item content.
+
+Collaborative Filtering (CF) remains the dominant paradigm in recommender systems;
+however, it fundamentally requires observed user-item interactions.
+Users with no prior rating history receive no meaningful recommendations,
+a well-known limitation referred to as the Cold Start problem.
+This project directly addresses that limitation by constructing a Hybrid system
+capable of generating relevant recommendations for all users,
+regardless of their rating history.
+
+\subsection{Objectives}
+
+\begin{itemize}[leftmargin=2cm]
+  \item Preprocess the GoodBooks-10K dataset and engineer rich book feature vectors.
+  \item Build a Content-Based KNN model that recommends books using metadata alone.
+  \item Build a TruncatedSVD collaborative filtering component for personalised ranking.
+  \item Design a Hybrid Router that blends both components based on user context.
+  \item Add Smart Intent Detection to support both title search and free-text discovery.
+  \item Evaluate all components quantitatively and deploy as a web application.
+\end{itemize}
+
+The report is organised as follows:
+Section~\ref{sec:dataset} describes the dataset and preprocessing pipeline;
+Section~\ref{sec:related} surveys relevant prior work;
+Section~\ref{sec:methodology} presents each system component;
+Section~\ref{sec:results} reports evaluation results;
+Section~\ref{sec:comparison} compares the Hybrid system against pure-CF baselines;
+Section~\ref{sec:conclusion} concludes with limitations and future directions.
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  SECTION 2 – DATASET AND PREPROCESSING
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Dataset and Preprocessing}
+\label{sec:dataset}
+
+\subsection{Dataset Description}
+
+The \textbf{GoodBooks-10K} dataset contains real book ratings from the Goodreads platform,
+provided as two CSV files. \\
+\textbf{Dataset source:
+\href{https://github.com/malcolmosh/goodbooks-10k-extended}{https://github.com/malcolmosh/goodbooks-10k-extended}}
+
+ratings.csv --- 5,976,479 explicit ratings (1--5 stars) from
+53,424 users across 10,000 books.
+Average ratings per user: $\approx$111.9; average ratings per book: $\approx$597.6.
+The resulting user-item matrix has a sparsity of $\approx$98.88\%.
+
+books.csv --- Metadata for 10,000 books:
+title, authors, genres, description,
+average\_rating, ratings\_count, and pages.
+This file is the foundation for all Content-Based features.
+
+\subsection{Exploratory Data Analysis}
+
+Figure~\ref{fig:dataset_overview} summarises the four key dataset characteristics
+used in the Hybrid system.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{1_dataset_overview.png}
+  \caption{GoodBooks-10K overview: rating distribution (top-left),
+           top genres (top-right), ratings-per-user histogram (bottom-left),
+           and book average-rating distribution (bottom-right).}
+  \label{fig:dataset_overview}
+\end{figure}
+
+Three observations shape our modelling choices.
+First, ratings are positively skewed (4--5 stars dominate), meaning users
+primarily rate books they have already chosen to read and enjoyed.
+Second, user activity follows a log-normal distribution: the peak occurs around the median of 111 ratings, and it drops off on both sides. This leaves a significant portion of the user base on the left side of the curve with too few ratings for traditional CF to work effectively.
+Third, \textit{Fiction}, \textit{Fantasy}, and \textit{Romance} are the three
+most common genres, confirming that genre is a strong relevance signal to encode
+explicitly in the feature vector.
+
+\subsection{Data Cleaning}
+
+Real-world datasets are inherently noisy and incomplete, requiring systematic cleaning before they can be ingested by machine learning algorithms. We applied the following preprocessing steps to assure data integrity:
+
+\begin{itemize}[leftmargin=2cm]
+  \item \textbf{Textual Imputation:} Missing values in text fields (authors, description, genres, title)
+        are explicitly filled with empty strings (""). This is a critical step because the subsequent Term Frequency-Inverse Document Frequency (TF-IDF) vectorizer cannot process NaN inputs and would otherwise throw runtime exceptions.
+  \item \textbf{Numerical Imputation:} Missing numerical values in average\_rating are imputed using the column's mean value to preserve the overall distribution. Missing values in pages are imputed using the median, which is more robust to extreme outlier books (e.g., massive encyclopedias). Missing language\_code fields are defaulted to "eng".
+  \item \textbf{No Truncation:} Unlike traditional Collaborative Filtering techniques that require dense overlapping user subsets, Content-Based KNN operates strictly on item metadata. Therefore, no users or books are discarded from the dataset due to low interaction counts. The Hybrid system trains its content component on the entire 10,000-book catalogue.
+\end{itemize}
+
+\subsection{Feature Engineering}
+\label{sec:features}
+
+To compute content similarity between books, we must convert raw categorical, textual, and numerical data into a unified mathematical vector space. The final 5,003-dimensional feature matrix is constructed through a two-step pipeline.
+
+\textbf{Step 1 --- Textual Representation (TF-IDF Space, 5,000 dimensions):}
+A composite text string, referred to as a \textit{text soup}, is constructed for each
+book by concatenating its metadata fields.
+To increase the relative importance of author and genre fields in the final
+representation --- as these attributes are considered primary signals of user content
+preference --- each of these fields is duplicated before concatenation:
+\[
+  \text{soup}_i = \text{title}_i \;\|\;
+                  2\times\text{authors}_i \;\|\;
+                  2\times\text{genres}_i \;\|\;
+                  \text{description}_i
+\]
+The resulting corpus of 10,000 text soup strings is vectorised using
+\texttt{TfidfVectorizer} with English stop-word removal and a
+vocabulary limit of 5,000 tokens (\texttt{max\_features=5000}).
+TF-IDF down-weights globally frequent terms (e.g., \textit{book}, \textit{story})
+while amplifying rare, discriminative tokens, producing a sparse matrix
+$T \in \mathbb{R}^{10000 \times 5000}$.
+
+\textbf{Step 2 --- Numerical Scaling (3 dimensions):}
+Three critical numerical metrics --- average\_rating, ratings\_count,
+and pages --- provide meta-signals about a book's reception, popularity, and length. Because these features operate on vastly different scales (e.g., ratings are 1--5, while rating counts can exceed millions), using them raw would completely dominate the cosine distance calculation. We address this by applying Min-Max scaling, compressing all three features strictly into a $[0, 1]$ range. These are stored as a dense matrix $N \in \mathbb{R}^{10000 \times 3}$.
+
+\textbf{Matrix Integration:}
+Finally, the textual sparse matrix $T$ and the numerical dense matrix $N$ are horizontally stacked (scipy.sparse.hstack). We explicitly maintain the compressed sparse row (CSR) format rather than converting to a dense array. Converting a $10000 \times 5003$ dense float64 matrix would continuously consume significant RAM, whereas the sparse representation ensures high memory efficiency and rapid computation during KNN inference.
+Table~\ref{tab:features} summarises the feature configuration.
+
+\begin{table}[H]
+  \centering
+  \caption{Feature matrix configuration for Content-Based KNN}
+  \label{tab:features}
+  \begin{tabular}{|l|c|p{6cm}|}
+    \hline
+    \textbf{Feature Group} & \textbf{Dimensions} & \textbf{Source} \\
+    \hline
+    TF-IDF Text (soup)    & 5,000 & title + 2$\times$authors + 2$\times$genres + description \\
+    \hline
+    Average Rating        & 1     & books.csv, MinMax scaled \\
+    \hline
+    Ratings Count         & 1     & books.csv, MinMax scaled \\
+    \hline
+    Page Count            & 1     & books.csv, MinMax scaled \\
+    \hline
+    Total        & 5,003 & Combined sparse matrix \\
+    \hline
+  \end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  SECTION 3 – RELATED WORK
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Collaborative Filtering}
+Collaborative Filtering (CF) is among the earliest and most widely studied approaches
+to automated recommendation [REF: Resnick et al., GroupLens, 1994].
+Memory-based methods, including User-Based and Item-Based KNN, identify similar
+users or items through rating-vector similarity measures such as cosine or Pearson correlation.
+Model-based methods, most notably matrix factorisation techniques [REF: Koren et al., 2009],
+decompose the user-item rating matrix into low-dimensional latent factor representations,
+achieving strong generalisation on dense rating data.
+However, all CF variants fundamentally depend on prior interaction data and
+cannot produce recommendations for users with no rating history.
+
+\subsection{Content-Based Filtering}
+Content-Based methods characterise items through descriptive features
+--- such as genre, author, and textual description --- and recommend items
+that are similar to those previously interacted with by the target user
+[REF: Pazzani \& Billsus, 2007].
+Text-based representations constructed using TF-IDF weighting are widely used
+in the book and document recommendation domains due to their simplicity,
+interpretability, and independence from interaction data.
+A notable advantage of Content-Based methods is their immunity to the Cold Start
+problem at the item level, as recommendations can be generated from metadata alone.
+
+\subsection{Hybrid Recommender Systems}
+Hybrid recommender systems combine Content-Based and Collaborative Filtering
+components to overcome the inherent limitations of each paradigm in isolation
+[REF: Burke, Hybrid Recommender Systems, 2002].
+Common hybridisation strategies include weighted combination, switching, and
+cascade architectures.
+Research has consistently shown that hybrid systems outperform single-paradigm
+approaches on both accuracy and coverage metrics, particularly when rating data
+is sparse [REF: Hybrid recommender systems survey].
+
+\subsection{The Cold Start Problem}
+The Cold Start problem arises when a recommender system must generate relevant
+recommendations for new users or items with no prior interaction history
+[REF: Schein et al., 2002].
+Content-Based and knowledge-based components are the most common mitigation
+strategies, as they do not require observed interactions.
+The present work adopts a routing-based hybrid architecture that transparently
+falls back to Content-Based KNN for all new and low-activity users,
+ensuring full-catalogue coverage under Cold Start conditions.
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  SECTION 4 – METHODOLOGY
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{Problem Formulation}
+
+The system must handle three distinct scenarios without separate interfaces:
+\begin{enumerate}[leftmargin=2cm]
+  \item No user history (Cold Start) --- recommendations based on content only.
+  \item Sparse user history ($<20$ ratings) --- content-based fallback.
+  \item Active user ($\geq 20$ ratings) --- blended content + collaborative signals.
+\end{enumerate}
+
+\subsection{Component 1 --- Content-Based KNN}
+\label{sec:knn}
+
+The Content-Based KNN serves as the \textit{primary} recommendation engine, handling all Cold Start scenarios.
+
+It is implemented using \texttt{sklearn.neighbors.NearestNeighbors} with parameters
+\texttt{n\_neighbors=11}, \texttt{metric=`cosine'}, and \texttt{algorithm=`brute'}.
+When a user queries a seed book, the model computes the cosine distance between
+the seed book's 5,003-dimensional vector and every other book in the matrix,
+then returns the 10 most similar books (excluding the seed itself).
+
+We request 11 neighbours specifically to allow discarding the query book itself
+(which has a self-distance of 0) without any post-processing, ensuring that
+exactly 10 valid recommendations are always returned in the response.
+
+\subsection{Component 2 --- TruncatedSVD (Collaborative Filtering)}
+\label{sec:svd}
+
+For users with a sufficient rating history ($\ge 20$ ratings), the system leverages collaborative signals to improve personalization. We apply TruncatedSVD (Singular Value Decomposition) with 50 latent factors directly on the sparse user-item rating matrix. 
+
+It is important to note that TruncatedSVD is not optimised for absolute rating
+prediction in this system.
+Because unobserved user-item interactions are represented as zeros in the sparse
+input matrix, the decomposition learns to predict scores biased toward zero,
+resulting in systematically underestimated absolute values.
+This zero-fill bias is a known property of applying matrix factorisation to
+implicit or incomplete rating data, and would also affect a global-mean predictor
+in a similar fashion.
+Accordingly, TruncatedSVD is employed exclusively for its \textbf{ranking signal}
+--- the relative ordering of books by predicted preference for a given user ---
+rather than for absolute score estimation.
+
+\subsection{Component 3 --- Hybrid Router}
+\label{sec:router}
+
+The \texttt{HybridRecommender} dynamically routes each request based on the user's
+interaction history:
+
+\begin{itemize}[leftmargin=2cm]
+  \item \textbf{Cold Start and Light Users ($< 20$ ratings):}
+        The system relies exclusively on Content-Based KNN recommendations.
+        TruncatedSVD latent representations are unreliable for users with sparse
+        interaction histories and are therefore not applied.
+  \item \textbf{Active Users ($\ge 20$ ratings):}
+        Normalised scores from both models are combined using a fixed weighting:
+        $\text{score}_{\text{final}} = 0.6 \times s_{\text{SVD}} + 0.4 \times s_{\text{KNN}}$.
+        The weighting coefficients were determined empirically through validation
+        experiments on a held-out set of active users, with the higher SVD weight
+        reflecting that personalised collaborative signals are more discriminative
+        than content similarity once sufficient interaction data is available.
+\end{itemize}
+
+\subsection{Component 4 --- Smart Intent Detection}
+\label{sec:intent}
+
+A unified search interface serves both title-based and free-text queries through
+a three-stage routing pipeline:
+
+\begin{enumerate}[leftmargin=2cm]
+  \item \textbf{Search Mode} --- The query is matched against book titles using a
+        case-insensitive substring comparison.
+        Upon a successful match, the system displays a Book Detail card and
+        invokes the KNN or Hybrid component using the matched book as the seed.
+  \item \textbf{Genre Mode} --- The query is checked against a curated lexicon of
+        recognised genre terms (e.g., \textit{fantasy}, \textit{mystery}).
+        Upon detection, the \texttt{genres} column is filtered directly,
+        and results are ranked by \texttt{average\_rating} in descending order.
+  \item \textbf{Discovery Mode} --- When no title or genre match is found,
+        the query is vectorised into TF-IDF space and matched against the full
+        10,000-book catalogue by cosine similarity,
+        returning the semantically most relevant titles.
+\end{enumerate}
+
+Routing correctness was validated through manual testing across a representative
+set of 30 query types, covering exact titles, genre keywords, and free-text phrases.
+All queries were correctly routed to the intended mode.
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  SECTION 4 – EXPERIMENTAL RESULTS
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Experimental Results}
+\label{sec:results}
+
+\subsection{Evaluation Protocol}
+
+\textbf{Content-Based KNN --- Leave-One-Out (LOO) Precision@K:}
+A set of 60 active users was selected, each satisfying the criterion of having
+at least five liked books (rated $\geq 4$). Users were sampled uniformly at random
+from all qualifying users using a fixed random seed to ensure reproducibility.
+For each user, one liked book is held out as the seed query;
+the remaining liked books constitute the ground truth set.
+The KNN model is invoked with the seed and its Top-$K$ output is compared
+against the ground truth to compute Precision@K.
+The random baseline precision is defined as the expected precision under uniform
+sampling from the full 10,000-book catalogue, yielding a theoretical value of
+$P_{\text{random}}@K = K / 10000 = 0.01\%$ for any $K$.
+
+\textbf{TruncatedSVD --- Train/Test Rating Prediction:}
+A separate cohort of 200 active users was randomly sampled.
+Their rating histories were partitioned into 80\% training and 20\% test splits.
+The SVD model was fitted on the training partition;
+Root Mean Square Error (RMSE) and Mean Absolute Error (MAE) were computed
+on held-out ratings to characterise the magnitude of the zero-fill bias.
+
+\subsection{Content-Based KNN Precision@K}
+
+Figure~\ref{fig:precision_k} shows Precision@K over six cutoff values.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{2_knn_precision_at_k.png}
+  \caption{Content-Based KNN --- Precision@K curve ($K = 1, 3, 5, 10, 15, 20$).
+           Evaluated on 60 active users using Leave-One-Out protocol.}
+  \label{fig:precision_k}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Content-Based KNN Precision@K results}
+  \label{tab:precision}
+  \begin{tabular}{|c|c|c|}
+    \hline
+    $K$ & Precision@K & Improvement vs.\ Random (1 in 10k) \\
+    \hline
+    1  & 15.0\% & $1500\times$ \\
+    3  & 15.0\% & $1500\times$ \\
+    5  & 14.0\% & $1400\times$ \\
+    10 & 13.0\% & $1300\times$ \\
+    15 &  8.7\% &  $870\times$ \\
+    20 &  6.5\% &  $650\times$ \\
+    \hline
+  \end{tabular}
+\end{table}
+
+The model achieves \textbf{Precision@10 = 13\%}, compared to a random baseline
+of 0.01\% under uniform sampling from 10,000 books, without using any rating history.
+Precision is stable between $K=1$ and $K=5$ (15--14\%), then declines gradually
+as the list size grows and marginally relevant books enter the tail.
+$K=10$ offers the optimal balance between breadth and relevance.
+
+\subsection{TruncatedSVD Rating Prediction Quality}
+\label{sec:svd_eval}
+
+Figure~\ref{fig:svd_rmse} analyses the TruncatedSVD prediction quality on 200 active
+users (80/20 train-test split).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{3_svd_rmse_analysis.png}
+  \caption{TruncatedSVD --- Actual vs.\ Predicted ratings (left) and
+           prediction error distribution (right). RMSE = 2.5626, MAE = 2.2801.}
+  \label{fig:svd_rmse}
+\end{figure}
+
+As annotated in Figure~\ref{fig:svd_rmse} (left), predicted scores are
+systematically lower than actual ratings due to the zero-fill bias introduced
+before decomposition --- unobserved entries are treated as zero, pulling all
+predictions downward.
+Despite inflated absolute error metrics (RMSE = 2.56), the relative
+\textit{ranking order} across books for a given user remains meaningful.
+TruncatedSVD is therefore used strictly as a collaborative \textbf{ranking signal}
+rather than an absolute rating predictor, a design choice that is both
+transparent and deliberate.
+
+\subsection{Qualitative Evaluation --- Sample Recommendations}
+\label{sec:qualitative}
+
+Figure~\ref{fig:sample_recs} compares Cold Start (Content-Based KNN only)
+against Hybrid recommendations for an active user.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{4_sample_recommendations.png}
+  \caption{Sample Recommendations: Content-Based KNN for a new user (left)
+           vs.\ Hybrid KNN+SVD for active user~12874 (right).}
+  \label{fig:sample_recs}
+\end{figure}
+
+For the seed ``The Hunger Games'' (Cold Start), the KNN correctly surfaces
+\textit{Mockingjay} (\#1), \textit{Catching Fire} (\#2), and \textit{Harry Potter} (\#3)
+using content similarity alone --- all thematically consistent dystopian/YA novels.
+For the same active user (right panel), the Hybrid system shifts the list toward
+classics previously preferred by the user (\textit{To Kill a Mockingbird},
+\textit{Charlotte's Web}), demonstrating that SVD successfully injects
+personalised taste beyond pure content similarity.
+However, during extended testing across multiple seed books, we observed
+that for highly active users the two panels sometimes converge,
+suggesting the SVD weight can overpower the contextual KNN signal --- a
+limitation addressed in Section~\ref{sec:conclusion}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  SECTION 5 – COMPARISON WITH CF BASELINE
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Comparison with Pure Collaborative Filtering Baselines}
+\label{sec:comparison}
+
+To evaluate the effectiveness of the Hybrid approach, we compare it against three pure Collaborative Filtering baselines evaluated on the same dataset: User-Based KNN, Item-Based KNN, and a Neural SVD (PyTorch). 
+
+\subsection{Performance \& Cold Start Robustness}
+
+Pure CF models cannot generate recommendations for users with no interaction history,
+a fundamental limitation that our Hybrid system eliminates by defaulting to the
+Content-Based KNN, thereby ensuring recommendation coverage for all users.
+Table~\ref{tab:full_compare} highlights the key capability differences.
+
+\begin{table}[H]
+  \centering
+  \caption{Capability Comparison --- CF Baseline vs.\ Hybrid System}
+  \label{tab:full_compare}
+  \begin{tabular}{|p{3cm}|p{3cm}|p{3.2cm}|p{3cm}|}
+    \hline
+    \textbf{Model Family} & \textbf{Handles Cold Start} & \textbf{Personalisation} & \textbf{Semantic Discovery} \\
+    \hline
+    Pure CF Baselines & No & Yes & No \\
+    \hline
+    CB-KNN (ours) & Yes & No & Yes \\
+    \hline
+    Hybrid KNN+SVD (ours)& Yes & Yes & Yes \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Regarding relative performance, although direct numerical comparison is not straightforward
+due to differing evaluation protocols (content-relevance task vs.\ rating-prediction task),
+the results are instructive.
+The pure CF baselines achieved extremely low retrieval Precision@10
+(maximum 2.0\% with Item-Based KNN) when predicting withheld highly-rated books
+on sparse rating data.
+In contrast, the Hybrid system's Content-Based component achieved Precision@10 = 13\%,
+substantially exceeding the random baseline of 0.01\%.
+
+Furthermore, qualitative analysis confirms that incorporating SVD into the Hybrid
+pipeline yields personalised ranking shifts for active users, producing recommendations
+that better reflect individual user taste patterns beyond pure semantic similarity.
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  SECTION 6 – DISCUSSION AND CONCLUSION
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Discussion and Conclusion}
+\label{sec:conclusion}
+
+\subsection{Summary}
+
+This project built a Hybrid Content-Based + Collaborative Filtering Book Recommender
+on the GoodBooks-10K dataset, targeting the Cold Start weakness of pure CF systems.
+
+The system's four main components work together as follows:
+(1) the Content-Based KNN provides a universal recommendation capability
+based on TF-IDF book features, requiring zero user history;
+(2) the TruncatedSVD adds personalised collaborative signals for active users;
+(3) the Hybrid Router selects or blends these components adaptively;
+(4) Smart Intent Detection routes each query through title search,
+genre filter, or semantic TF-IDF discovery in a single unified interface.
+
+Quantitatively, the Content-Based KNN achieves Precision@10 = 13\%
+under the Leave-One-Out content protocol,
+1300$\times$ better than random, providing robust recommendations even when pure CF fails.
+
+\subsection{Limitations}
+
+\begin{itemize}[leftmargin=2cm]
+  \item \textbf{TruncatedSVD RMSE bias.} Zero-filling unobserved entries
+        introduces systematic downward bias in absolute predicted ratings.
+        This can be addressed by mean-filling or using matrix completion methods.
+  \item \textbf{Weighting Imbalance in Hybrid Router.} During extensive testing, we observed that for highly active users the Hybrid system sometimes returns nearly identical top recommendations regardless of the specific seed book queried. This indicates that the 60\% static weight assigned to TruncatedSVD can overpower the contextual KNN signal (40\%), causing the system to prioritise historical user preferences over the user's immediate search intent.
+  \item \textbf{KNN scalability.} Brute-force cosine search is $O(n \times d)$
+        per query. For production use, approximate nearest-neighbour indexes
+        (FAISS, HNSW) would reduce latency significantly.
+  \item \textbf{No implicit feedback.} The system uses only explicit star ratings.
+        Implicit signals (click, browse history) would enrich both components.
+\end{itemize}
+
+\subsection{Future Work}
+
+\begin{itemize}[leftmargin=2cm]
+  \item Replace the static 60/40 weighting in the Hybrid Router with a dynamic blending mechanism that adjusts based on the query context or user intent.
+  \item Replace TruncatedSVD with Bayesian Personalised Ranking (BPR) loss
+        to optimise for ranking rather than rating prediction.
+  \item Explore deep learning approaches (NeuralCF, BERT4Rec) for
+        sequence-aware recommendation.
+  \item Add approximate nearest-neighbour search (FAISS) for real-time KNN queries.
+  \item Integrate cover image embeddings (CLIP) as additional content features.
+\end{itemize}
+
+\end{document}
