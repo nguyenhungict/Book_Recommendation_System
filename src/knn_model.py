@@ -48,8 +48,9 @@ class KNNRecommender:
     Content-Based Recommendation using K-Nearest Neighbors.
     Finds similarity between books based on TF-IDF (text) + Scaled Ratings (numbers).
     """
-    def __init__(self, n_neighbors=11):
-        # 11 because position [0] is always the query book itself (distance=0)
+    def __init__(self, n_neighbors=21):
+        # 21 because position [0] is always the query book itself (distance=0)
+        # so effective max top_k = 20
         self.n_neighbors    = n_neighbors
         self.model          = NearestNeighbors(n_neighbors=n_neighbors,
                                                metric='cosine', algorithm='brute')

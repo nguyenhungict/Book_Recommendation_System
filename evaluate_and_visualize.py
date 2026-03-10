@@ -122,15 +122,17 @@ def chart_dataset_overview():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CHART 2 — KNN Precision@K curve
+# CHART 2 — KNN Precision@K, Recall@K, F1@K curves
 # ═══════════════════════════════════════════════════════════════════════════════
-def chart_knn_precision():
+def chart_knn_metrics():
     import re
-    print("  Evaluating KNN Precision@K (this may take 1-2 min)...")
+    print("  Evaluating KNN Precision@K, Recall@K, F1@K (this may take 1-2 min)...")
     active_users = ratings[ratings['rating'] >= 4]['user_id'].value_counts()
     sample_users = active_users[active_users >= 10].index[:60]   # 60 users
     k_values = [1, 3, 5, 10, 15, 20]
     precisions = {k: [] for k in k_values}
+    recalls    = {k: [] for k in k_values}
+    f1s        = {k: [] for k in k_values}
 
     for user_id in sample_users:
         liked     = ratings[(ratings['user_id'] == user_id) & (ratings['rating'] >= 4)]
@@ -146,30 +148,62 @@ def chart_knn_precision():
             continue
         ground_truth = set(
             books[books['book_id'].isin(liked['book_id'].values[1:])]['title'].values)
+        n_relevant   = len(ground_truth)
         rec_titles   = list(recs['title'].values)
         for k in k_values:
             hits = len(set(rec_titles[:k]) & ground_truth)
-            precisions[k].append(hits / k)
+            p = hits / k
+            r = hits / n_relevant if n_relevant > 0 else 0.0
+            f = 2 * p * r / (p + r) if (p + r) > 0 else 0.0
+            precisions[k].append(p)
+            recalls[k].append(r)
+            f1s[k].append(f)
 
-    means = [np.mean(precisions[k]) * 100 for k in k_values]
+    p_means  = [np.mean(precisions[k]) * 100 for k in k_values]
+    r_means  = [np.mean(recalls[k])    * 100 for k in k_values]
+    f1_means = [np.mean(f1s[k])        * 100 for k in k_values]
 
-    fig, ax = plt.subplots(figsize=(9, 5), facecolor=DARK)
+    fig, ax = plt.subplots(figsize=(10, 5.5), facecolor=DARK)
     ax.set_facecolor(CARD)
-    ax.plot(k_values, means, marker='o', markersize=8, linewidth=2.5, color=BLUE)
-    ax.fill_between(k_values, means, alpha=.12, color=BLUE)
-    for k, m in zip(k_values, means):
-        ax.annotate(f'{m:.1f}%', (k, m), textcoords='offset points',
-                    xytext=(0, 10), ha='center', fontsize=9, color=BLUE)
-    ax.set_title('KNN Content-Based — Precision@K', color='#e2e8f0',
-                 fontweight='bold', fontsize=13)
-    ax.set_xlabel('K (number of recommendations)'); ax.set_ylabel('Precision (%)')
+
+    # Plot all 3 curves
+    ax.plot(k_values, p_means,  marker='o', markersize=7, linewidth=2.5,
+            color=BLUE,  label='Precision@K')
+    ax.plot(k_values, r_means,  marker='s', markersize=7, linewidth=2.5,
+            color=GREEN, label='Recall@K')
+    ax.plot(k_values, f1_means, marker='D', markersize=7, linewidth=2.5,
+            color=ORG,   label='F1@K')
+
+    ax.fill_between(k_values, p_means,  alpha=.08, color=BLUE)
+    ax.fill_between(k_values, r_means,  alpha=.08, color=GREEN)
+    ax.fill_between(k_values, f1_means, alpha=.08, color=ORG)
+
+    # Annotate data points
+    for k, p, r, f in zip(k_values, p_means, r_means, f1_means):
+        ax.annotate(f'{p:.1f}%', (k, p), textcoords='offset points',
+                    xytext=(0, 10), ha='center', fontsize=8, color=BLUE)
+        ax.annotate(f'{r:.1f}%', (k, r), textcoords='offset points',
+                    xytext=(0, -14), ha='center', fontsize=8, color=GREEN)
+        ax.annotate(f'{f:.1f}%', (k, f), textcoords='offset points',
+                    xytext=(18, 0), ha='left', fontsize=8, color=ORG)
+
+    ax.set_title('KNN Content-Based — Precision@K / Recall@K / F1@K',
+                 color='#e2e8f0', fontweight='bold', fontsize=13)
+    ax.set_xlabel('K (number of recommendations)')
+    ax.set_ylabel('Score (%)')
+    ax.legend(fontsize=10, loc='upper right')
     ax.grid(True); ax.set_axisbelow(True)
     fig.tight_layout()
-    path = os.path.join(CHART_DIR, '2_knn_precision_at_k.png')
+    path = os.path.join(CHART_DIR, '2_knn_precision_recall_f1.png')
     fig.savefig(path, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"  Saved → {path}")
-    return {k: np.mean(precisions[k]) for k in k_values}
+
+    return {
+        'precision': {k: np.mean(precisions[k]) for k in k_values},
+        'recall':    {k: np.mean(recalls[k])    for k in k_values},
+        'f1':        {k: np.mean(f1s[k])        for k in k_values},
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -293,29 +327,48 @@ def chart_sample_recommendations():
 # ═══════════════════════════════════════════════════════════════════════════════
 # CHART 5 — Model Comparison Summary
 # ═══════════════════════════════════════════════════════════════════════════════
-def chart_model_comparison(knn_precision_dict, rmse, mae):
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5), facecolor=DARK)
+def chart_model_comparison(knn_metrics_dict, rmse, mae):
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6), facecolor=DARK)
     for ax in axes: ax.set_facecolor(CARD)
 
-    # Bar: KNN Precision@K
-    ks = list(knn_precision_dict.keys())
-    ps = [v * 100 for v in knn_precision_dict.values()]
-    bars = axes[0].bar([str(k) for k in ks], ps,
-                       color=[BLUE, PURP, GREEN, ORG, RED, BLUE], width=0.6)
-    axes[0].set_title('KNN Precision@K Summary', color='#e2e8f0', fontweight='bold')
-    axes[0].set_xlabel('K'); axes[0].set_ylabel('Precision (%)')
-    for bar, p in zip(bars, ps):
-        axes[0].text(bar.get_x() + bar.get_width()/2,
-                     bar.get_height() + 0.1, f'{p:.1f}%',
-                     ha='center', fontsize=9, color='#e2e8f0')
+    # Bar chart: Grouped bars for Precision@K, Recall@K, F1@K
+    prec_dict = knn_metrics_dict['precision']
+    rec_dict  = knn_metrics_dict['recall']
+    f1_dict   = knn_metrics_dict['f1']
+    ks = list(prec_dict.keys())
+    x = np.arange(len(ks))
+    width = 0.25
+
+    bars_p  = axes[0].bar(x - width, [prec_dict[k]*100 for k in ks],
+                          width, color=BLUE,  label='Precision@K')
+    bars_r  = axes[0].bar(x,         [rec_dict[k]*100  for k in ks],
+                          width, color=GREEN, label='Recall@K')
+    bars_f1 = axes[0].bar(x + width, [f1_dict[k]*100   for k in ks],
+                          width, color=ORG,   label='F1@K')
+
+    axes[0].set_title('KNN Metrics@K Summary', color='#e2e8f0', fontweight='bold')
+    axes[0].set_xlabel('K'); axes[0].set_ylabel('Score (%)')
+    axes[0].set_xticks(x); axes[0].set_xticklabels([str(k) for k in ks])
+    axes[0].legend(fontsize=8)
+
+    for bars in [bars_p, bars_r, bars_f1]:
+        for bar in bars:
+            h = bar.get_height()
+            if h > 0.05:
+                axes[0].text(bar.get_x() + bar.get_width()/2, h + 0.1,
+                             f'{h:.1f}%', ha='center', fontsize=7, color='#e2e8f0')
     axes[0].grid(axis='y'); axes[0].set_axisbelow(True)
 
     # Metric summary table
     axes[1].axis('off')
     table_data = [
         ['Metric', 'Value', 'Interpretation'],
-        ['KNN Precision@10', f'{knn_precision_dict.get(10,0)*100:.2f}%',
-         '~800x better than random'],
+        ['KNN Precision@10', f'{prec_dict.get(10,0)*100:.2f}%',
+         'Quality of top-10 list'],
+        ['KNN Recall@10',    f'{rec_dict.get(10,0)*100:.2f}%',
+         'Coverage of liked books'],
+        ['KNN F1@10',        f'{f1_dict.get(10,0)*100:.2f}%',
+         'Balance of P & R'],
         ['SVD RMSE', f'{rmse:.4f}', 'Relative rank accurate'],
         ['SVD MAE',  f'{mae:.4f}',  'Average rating error'],
         ['Dataset', '10k books', '5.97M ratings'],
@@ -323,8 +376,6 @@ def chart_model_comparison(knn_precision_dict, rmse, mae):
         ['Features', '5,003 dims', 'TF-IDF + Numerical'],
     ]
     col_widths = [0.30, 0.20, 0.50]
-    colors_row = [[DARK, DARK, DARK],
-                  *[[CARD, CARD, CARD] for _ in range(len(table_data)-1)]]
     t = axes[1].table(cellText=table_data[1:], colLabels=table_data[0],
                       cellLoc='center', loc='center',
                       colWidths=col_widths)
@@ -354,8 +405,8 @@ if __name__ == '__main__':
     print("\n[1/5] Dataset Overview...")
     chart_dataset_overview()
 
-    print("\n[2/5] KNN Precision@K...")
-    knn_dict = chart_knn_precision()
+    print("\n[2/5] KNN Precision@K / Recall@K / F1@K...")
+    knn_metrics = chart_knn_metrics()
 
     print("\n[3/5] SVD RMSE Analysis...")
     rmse, mae = chart_svd_rmse()
@@ -364,11 +415,13 @@ if __name__ == '__main__':
     chart_sample_recommendations()
 
     print("\n[5/5] Model Comparison...")
-    chart_model_comparison(knn_dict, rmse, mae)
+    chart_model_comparison(knn_metrics, rmse, mae)
 
     print("\n" + "="*60)
     print(f"  ✅ All 5 charts saved to: {CHART_DIR}")
-    print(f"  KNN Precision@10 : {knn_dict.get(10,0)*100:.2f}%")
+    print(f"  KNN Precision@10 : {knn_metrics['precision'].get(10,0)*100:.2f}%")
+    print(f"  KNN Recall@10    : {knn_metrics['recall'].get(10,0)*100:.2f}%")
+    print(f"  KNN F1@10        : {knn_metrics['f1'].get(10,0)*100:.2f}%")
     print(f"  SVD RMSE         : {rmse:.4f}")
     print(f"  SVD MAE          : {mae:.4f}")
     print("="*60)
